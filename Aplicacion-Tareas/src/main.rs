@@ -1,18 +1,15 @@
 use std::collections::HashMap;
 use std::io::Read;
 use std::str::FromStr;
-fn main() {
+fn main() {  
     let accion = std::env::args().nth(1).expect("Por favor especifique una acción");
     let articulo = std::env::args().nth(2).expect("Por favor especifique un artículo");
-    let mut ejecutar = Ejecutar{
-        map: HashMap::new(),
-    };
     let mut ejecutar = Ejecutar::nuevo().expect("Error al inicializar la base de datos");
-    if accion == "agregar"{
+    if accion == "agregar"{ 
         ejecutar.insertar(articulo);
         match ejecutar.guardar(){
             Ok(_) => println!("Ejecucion exitosa y guardada"),
-            Err(e) => println!("Error: {}", e),
+            Err(why) => println!("Ah ocurrido un error: {}", why),
         }
     }else if accion == "completado"{
         match ejecutar.completado(&articulo){
@@ -42,19 +39,17 @@ impl Ejecutar{
         .write(true)
         .create(true)
         .read(true)
-        .open("base_de_datos.txt")?;
+        .open("bdatos.txt")?;
         let mut contenido = String::new();
         f.read_to_string(&mut contenido)?;
-        let mut map = HashMap::new();
+        let map: HashMap<String, bool> = contenido
+            .lines()
+            .map(|line| line.splitn(2, '\t').collect::<Vec<&str>>())
+            .map(|v| (v[0], v[1]))
+            .map(|(k, v)| (String::from(k), bool::from_str(v).unwrap()))
+            .collect();
+        Ok(Ejecutar { map })
         
-        for entradas in contenido.lines(){
-            let mut valores = entradas.split('\t');
-            let key = valores.next().expect("No se encontro la clave");
-            let val = valores.next().expect("No se encontro el valor");
-            map.insert(String::from(key), bool::from_str(val).unwrap());
-        }
-        
-        Ok(Ejecutar{map})
     }
     fn insertar(&mut self, key: String){
         self.map.insert(key, true);
@@ -62,12 +57,12 @@ impl Ejecutar{
     fn guardar(self) -> Result<(), std::io::Error>{
         //* Se devuelve un Result que puede ser un error o un valor
         let mut contenido = String::new();
-        for(k,v) in self.map{
-            let registro = format!("{}\t {}\n",k,v);
+        for(k, v) in self.map{
+            let registro = format!("{}\t{}\n",k, v);
             contenido.push_str(&registro);
         }
-        std::fs::write("base_de_datos.txt", contenido)
-    }
+        std::fs::write("bdatos.txt", contenido)
+    } 
     //* Option es un tipo de dato que puede ser None o Some
     //* Option se utiliza para representar un valor que puedo o no existir
     fn completado(&mut self, key:&String) -> Option<()>{
@@ -83,3 +78,8 @@ impl Ejecutar{
 //TODO Explicacion:
 //* 1. map: HashMap<String, bool> Es un HashMap que contiene una cadena y un booleano
 //*Observacion:para que sea metodo se debe tomar self como primer argumento
+
+//TODO Resultados:
+//*Bueno hasta este punto como resultado tenemos lo siguiente:
+//* 1. Jugar Valorant y Comer Chaufa la tenemos como tareas pendientes
+//* 2. Estudiar Clojure como tarea completada

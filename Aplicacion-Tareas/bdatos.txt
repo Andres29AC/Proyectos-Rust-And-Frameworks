@@ -1,0 +1,3 @@
+Jugar Valorant	true
+Estudiar Clojure	false
+Comer Chaufa	true
