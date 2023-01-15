@@ -1,6 +1,6 @@
 use std::collections::HashMap;
-use std::io::Read;
-use std::str::FromStr;
+//use std::io::Read;
+//use std::str::FromStr;
 fn main() {  
     let accion = std::env::args().nth(1).expect("Por favor especifique una acción");
     let articulo = std::env::args().nth(2).expect("Por favor especifique un artículo");
@@ -9,7 +9,7 @@ fn main() {
         ejecutar.insertar(articulo);
         match ejecutar.guardar(){
             Ok(_) => println!("Ejecucion exitosa y guardada"),
-            Err(why) => println!("Ah ocurrido un error: {}", why),
+            Err(e) => println!("Ah ocurrido un error: {}", e),
         }
     }else if accion == "completado"{
         match ejecutar.completado(&articulo){
@@ -39,7 +39,10 @@ impl Ejecutar{
         .write(true)
         .create(true)
         .read(true)
-        .open("bdatos.txt")?;
+        //.open("bdatos.txt")?;
+        //*Actualizando a formato Json
+        .open("bdatos.json")?;
+        /*
         let mut contenido = String::new();
         f.read_to_string(&mut contenido)?;
         let map: HashMap<String, bool> = contenido
@@ -49,20 +52,36 @@ impl Ejecutar{
             .map(|(k, v)| (String::from(k), bool::from_str(v).unwrap()))
             .collect();
         Ok(Ejecutar { map })
+        */
+        match serde_json::from_reader(f){
+            Ok(map) => Ok(Ejecutar { map }),
+            Err(e) if e.is_eof() => Ok(Ejecutar { map: HashMap::new() }),
+            Err(e) => panic!("Error al leer el archivo: {}", e),
+        }
         
     }
     fn insertar(&mut self, key: String){
         self.map.insert(key, true);
     }
-    fn guardar(self) -> Result<(), std::io::Error>{
+    
+    //fn guardar(self) -> Result<(), std::io::Error>{
         //* Se devuelve un Result que puede ser un error o un valor
-        let mut contenido = String::new();
-        for(k, v) in self.map{
-            let registro = format!("{}\t{}\n",k, v);
-            contenido.push_str(&registro);
-        }
-        std::fs::write("bdatos.txt", contenido)
-    } 
+     //   let mut contenido = String::new();
+     //   for(k, v) in self.map{
+       //     let registro = format!("{}\t{}\n",k, v);
+         //   contenido.push_str(&registro);
+       // }
+        //std::fs::write("bdatos.txt", contenido)
+    //}
+    fn guardar(self) -> Result<(),Box<dyn std::error::Error>>{
+        let f = std::fs::OpenOptions::new()
+        .write(true) 
+        .create(true)
+        .truncate(true)
+        .open("bdatos.json")?;
+        serde_json::to_writer_pretty(f, &self.map)?;
+        Ok(())
+    }
     //* Option es un tipo de dato que puede ser None o Some
     //* Option se utiliza para representar un valor que puedo o no existir
     fn completado(&mut self, key:&String) -> Option<()>{
