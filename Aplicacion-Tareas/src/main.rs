@@ -129,7 +129,7 @@ impl Ejecutar {
     fn editar_estado(&mut self, nombre_tarea: &str) {
         match self.map.get_mut(nombre_tarea) {
             Some(estado) => {
-                *estado = !*estado; // Cambia el estado opuesto
+                *estado = !*estado; //NOTE:Cambia el estado opuesto
             }
             None => {
                 println!("La tarea '{}' no existe", nombre_tarea);
@@ -142,3 +142,11 @@ impl Ejecutar {
 //TODO Explicacion:
 //* 1. map: HashMap<String, bool> Es un HashMap que contiene una cadena y un booleano
 //*Observacion:para que sea metodo se debe tomar self como primer argumento
+
+//NOTE: Comandos:
+// cargo run agregar "nombre de la tarea"
+// cargo run completado "nombre de la tarea"
+// cargo run eliminar "nombre de la tarea"
+// cargo run listar
+// cargo run editar_nombre "nombre de la tarea" "nuevo nombre de la tarea"
+// cargo run editar_estado "nombre de la tarea"
