@@ -86,11 +86,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     file.write_all(body.as_bytes())?;
 
     // Define selectores para encontrar todos los recursos relevantes
-    let selectors = vec![
-        ("img", "src"),    // Imágenes
-        ("link", "href"),  // CSS y otros recursos vinculados
-        ("script", "src"), // JavaScript
-    ];
+    let selectors = vec![("img", "src"), ("link", "href"), ("script", "src")];
 
     // Descarga y guarda cada recurso
     for (tag, attr) in selectors {
